@@ -2,6 +2,8 @@
 
 A production-grade **multi-tenant Task Management API** built with **.NET 8**, demonstrating advanced backend architecture patterns used in real enterprise systems.
 
+![CI](https://github.com/leowai1986/task-flow-api/actions/workflows/ci.yml/badge.svg)
+
 ---
 
 ## Architecture & Patterns
