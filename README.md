@@ -2,7 +2,7 @@
 
 A production-grade **multi-tenant Task Management API** built with **.NET 8**, demonstrating advanced backend architecture patterns used in real enterprise systems.
 
-![CI](https://github.com/lwainer/taskflow-api/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/leowai1986/task-flow-api/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -76,7 +76,7 @@ docker run -p 6379:6379 -d redis:alpine
 ### Run the API
 
 ```bash
-git clone https://github.com/lwainer/taskflow-api.git
+git clone https://github.com/leowai1986/task-flow-api.git
 cd taskflow-api
 
 # Update appsettings.json with your connection strings and a strong JWT secret
