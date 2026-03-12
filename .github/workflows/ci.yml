@@ -7,9 +7,10 @@ on:
     branches: [ main ]
     
 permissions:
-  contents: 'read'
-  id-token: 'write'
-  issues: 'write'
+  contents: read
+  id-token: write
+  issues: write
+  checks: write
 
 jobs:
   build-and-test:
