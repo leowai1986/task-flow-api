@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    
+permissions:
+  contents: 'read'
+  id-token: 'write'
+  issues: 'write'
 
 jobs:
   build-and-test:
