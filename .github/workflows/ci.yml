@@ -1,4 +1,4 @@
-name: CI
+name: CI / CD
 
 on:
   push:
@@ -12,8 +12,13 @@ permissions:
   issues: write
   checks: write
 
+env:
+  AZURE_WEBAPP_NAME: taskflow-api
+  DOTNET_VERSION: '8.0.x'
+
 jobs:
   build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +26,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
         run: dotnet restore
@@ -29,13 +34,50 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=results.trx"
+      - name: Unit Tests
+        run: dotnet test tests/Application.Tests --no-build --configuration Release --logger "trx;LogFileName=unit-results.trx"
 
-      - name: Publish test results
+      - name: Integration Tests
+        run: dotnet test tests/Integration.Tests --no-build --configuration Release --logger "trx;LogFileName=integration-results.trx"
+
+      - name: Publish Test Results
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: NUnit Tests
+          name: Test Results
           path: '**/*.trx'
           reporter: dotnet-trx
+
+      - name: Publish Artifact
+        if: github.ref == 'refs/heads/main'
+        run: dotnet publish src/API/TaskFlow.API.csproj -c Release -o ./publish
+
+      - name: Upload Artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: taskflow-api
+          path: ./publish
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: taskflow-api
+          path: ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish

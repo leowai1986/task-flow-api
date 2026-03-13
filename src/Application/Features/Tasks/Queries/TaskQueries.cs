@@ -85,7 +85,7 @@ public class GetTaskByIdHandler : IRequestHandler<GetTaskByIdQuery, TaskDto>
         var task = await _tasks.GetByIdWithDetailsAsync(query.Id, user.TenantId)
             ?? throw new NotFoundException(nameof(TaskItem), query.Id);
 
-        var dto = task.ToDto(includeComments: true);
+        var dto = task.ToDto();
         await _cache.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5));
         return dto;
     }

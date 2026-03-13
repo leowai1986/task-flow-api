@@ -18,7 +18,4 @@
     <ProjectReference Include="..\Application\TaskFlow.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\TaskFlow.Infrastructure.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="logs\" />
-  </ItemGroup>
 </Project>

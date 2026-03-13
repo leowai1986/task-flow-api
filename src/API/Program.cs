@@ -73,7 +73,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskFlow API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskFlow API", Version = "v1",
+        Description = "Multi-tenant · Clean Architecture · CQRS · JWT + Refresh Tokens · Redis · Domain Events · Rate Limiting · Audit Log · Soft Delete · Outbox Pattern" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization. Example: 'Bearer {token}'",

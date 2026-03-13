@@ -1,7 +1,6 @@
 using FluentValidation;
 using MediatR;
 using TaskFlow.Application.Common.Interfaces;
-using TaskFlow.Application.Features.Comments.Commands;
 using TaskFlow.Domain.Entities;
 using TaskFlow.Domain.Exceptions;
 using TaskFlow.Domain.Interfaces;
@@ -13,8 +12,7 @@ public record TaskDto(
     string Status, string Priority, DateTime? DueDate,
     DateTime? CompletedAt, DateTime CreatedAt, DateTime? UpdatedAt,
     string[] Tags, int CreatedByUserId, int? AssignedToUserId,
-    string? AssignedToName, int CommentCount,
-    IEnumerable<CommentDto>? Comments
+    string? AssignedToName, int CommentCount
 );
 
 // ── Create Task ───────────────────────────────────────────────────────────────
@@ -237,14 +235,11 @@ public class DeleteTaskHandler : IRequestHandler<DeleteTaskCommand, Unit>
 // ── Mapping helper ────────────────────────────────────────────────────────────
 public static class TaskMappingExtensions
 {
-    public static TaskDto ToDto(this TaskItem t, bool includeComments = false) =>
-        new(t.Id, t.TenantId, t.Title, t.Description,
-            t.Status.ToString(), t.Priority.ToString(),
-            t.DueDate, t.CompletedAt, t.CreatedAt, t.UpdatedAt,
-            t.Tags, t.CreatedByUserId, t.AssignedToUserId,
-            t.AssignedTo?.FullName, t.Comments.Count,
-            includeComments ? t.Comments.Select(c => new CommentDto(
-                c.Id, c.TaskItemId, c.UserId, c.User?.FullName ?? "",
-                c.Content, c.IsEdited, c.CreatedAt, c.UpdatedAt)) : null
-        );
+    public static TaskDto ToDto(this TaskItem t) => new(
+        t.Id, t.TenantId, t.Title, t.Description,
+        t.Status.ToString(), t.Priority.ToString(),
+        t.DueDate, t.CompletedAt, t.CreatedAt, t.UpdatedAt,
+        t.Tags, t.CreatedByUserId, t.AssignedToUserId,
+        t.AssignedTo?.FullName, t.Comments.Count
+    );
 }

@@ -24,7 +24,6 @@ public class TaskRepository : ITaskRepository
     {
         var q = _db.Tasks
             .Include(t => t.AssignedTo)
-            .Include(t => t.Comments)
             .Where(t => t.TenantId == query.TenantId)
             .AsQueryable();
 
