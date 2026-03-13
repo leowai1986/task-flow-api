@@ -21,7 +21,11 @@ public static class InfrastructureServiceRegistration
             options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
         var redisConn = config.GetConnectionString("Redis")!;
-        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConn));
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            try { return ConnectionMultiplexer.Connect(redisConn); }
+            catch { return ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false"); }
+        });
         services.AddStackExchangeRedisCache(options => options.Configuration = redisConn);
 
         services.AddScoped<ITaskRepository, TaskRepository>();

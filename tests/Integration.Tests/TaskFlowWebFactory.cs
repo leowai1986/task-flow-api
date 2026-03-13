@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
 using TaskFlow.Application.Common.Interfaces;
 using TaskFlow.Infrastructure.Data;
-using TaskFlow.Infrastructure.Identity;
 
 namespace TaskFlow.Integration.Tests;
 
@@ -14,18 +13,23 @@ public class TaskFlowWebFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         builder.ConfigureServices(services =>
         {
             // Replace SQL Server with InMemory
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<AppDbContext>();
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid()));
+                options.UseInMemoryDatabase("TaskFlowTestDb"));
 
             // Replace Redis with in-memory cache
             services.RemoveAll<IConnectionMultiplexer>();
             services.RemoveAll<ICacheService>();
             services.AddSingleton<ICacheService, InMemoryCacheService>();
+
+            // Remove health checks that try to connect to real SQL/Redis
+            services.RemoveAll<Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck>();
 
             // Replace hosted services (outbox processor) to avoid background noise
             services.RemoveAll<Microsoft.Extensions.Hosting.IHostedService>();
@@ -35,8 +39,6 @@ public class TaskFlowWebFactory : WebApplicationFactory<Program>
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.Database.EnsureCreated();
         });
-
-        builder.UseEnvironment("Testing");
     }
 }
 

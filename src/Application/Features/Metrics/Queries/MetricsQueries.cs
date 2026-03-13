@@ -1,9 +1,8 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using TaskFlow.Application.Common.Interfaces;
 using TaskFlow.Domain.Entities;
 using TaskFlow.Domain.Exceptions;
-using TaskFlow.Infrastructure.Data;
+using TaskFlow.Domain.Interfaces;
 
 namespace TaskFlow.Application.Features.Metrics.Queries;
 
@@ -27,12 +26,12 @@ public record GetTenantMetricsQuery : IRequest<TenantMetricsDto>;
 
 public class GetTenantMetricsHandler : IRequestHandler<GetTenantMetricsQuery, TenantMetricsDto>
 {
-    private readonly AppDbContext _db;
+    private readonly ITaskRepository _tasks;
     private readonly ICurrentUserService _currentUser;
 
-    public GetTenantMetricsHandler(AppDbContext db, ICurrentUserService currentUser)
+    public GetTenantMetricsHandler(ITaskRepository tasks, ICurrentUserService currentUser)
     {
-        _db = db;
+        _tasks = tasks;
         _currentUser = currentUser;
     }
 
@@ -40,10 +39,12 @@ public class GetTenantMetricsHandler : IRequestHandler<GetTenantMetricsQuery, Te
     {
         var user = _currentUser.User ?? throw new UnauthorizedException();
 
-        var tasks = await _db.Tasks
-            .Include(t => t.CreatedBy)
-            .Where(t => t.TenantId == user.TenantId)
-            .ToListAsync(ct);
+        var (taskItems, _) = await _tasks.GetPagedAsync(new TaskQuery
+        {
+            TenantId = user.TenantId,
+            PageSize = 10000
+        });
+        var tasks = taskItems.ToList();
 
         var now = DateTime.UtcNow;
 
