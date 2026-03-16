@@ -12,7 +12,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TaskFlowDb;User Id=sa;Password=TaskFlow_Pass123!;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
-      - Jwt__Secret=TaskFlow-SuperSecreta-2024-Leandro-Wainer-Dev-MustBe32Chars!
+      - Jwt__Secret=TaskFlow-SuperSecreta-2026-Leandro-Wainer-Dev-MustBe32Chars!
       - Jwt__Issuer=taskflow-api
       - Jwt__Audience=taskflow-client
       - Jwt__AccessTokenExpiryMinutes=60

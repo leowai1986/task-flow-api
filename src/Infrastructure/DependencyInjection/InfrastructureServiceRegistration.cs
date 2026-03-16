@@ -44,6 +44,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IIdempotencyService, IdempotencyService>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<IEntityEventCollector, EntityEventCollector>();
 
         services.AddHostedService<OutboxProcessorService>();
 

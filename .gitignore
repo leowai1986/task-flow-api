@@ -1,7 +1,26 @@
+# Build output
 bin/
 obj/
-*.user
+
+# Visual Studio
 .vs/
-.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# User-specific config
 appsettings.Development.json
+appsettings.Local.json
+
+# Test results
 *.trx
+TestResults/
+
+# Logs
+logs/
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db

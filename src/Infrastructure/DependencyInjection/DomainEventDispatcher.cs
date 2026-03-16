@@ -1,19 +1,44 @@
 using MediatR;
 using TaskFlow.Application.Common.Interfaces;
 using TaskFlow.Domain.Entities;
-using TaskFlow.Domain.Events;
+using TaskFlow.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 
 namespace TaskFlow.Infrastructure.DependencyInjection;
 
+public class EntityEventCollector : IEntityEventCollector
+{
+    private readonly AppDbContext _db;
+
+    public EntityEventCollector(AppDbContext db) => _db = db;
+
+    public IReadOnlyList<IDomainEvent> CollectAndClear()
+    {
+        var entities = _db.ChangeTracker
+            .Entries<BaseEntity>()
+            .Select(e => e.Entity)
+            .Where(e => e.DomainEvents.Any())
+            .ToList();
+
+        var events = entities
+            .SelectMany(e => e.DomainEvents)
+            .ToList();
+
+        foreach (var entity in entities)
+            entity.ClearDomainEvents();
+
+        return events;
+    }
+}
+
 public class DomainEventDispatcher : IDomainEventDispatcher
 {
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly ILogger<DomainEventDispatcher> _logger;
 
-    public DomainEventDispatcher(IMediator mediator, ILogger<DomainEventDispatcher> logger)
+    public DomainEventDispatcher(IPublisher publisher, ILogger<DomainEventDispatcher> logger)
     {
-        _mediator = mediator;
+        _publisher = publisher;
         _logger = logger;
     }
 
@@ -21,9 +46,10 @@ public class DomainEventDispatcher : IDomainEventDispatcher
     {
         foreach (var domainEvent in events)
         {
-            _logger.LogInformation("Domain event dispatched: {Event}", domainEvent.GetType().Name);
-            // Extend here: publish to MediatR notifications, Azure Service Bus, etc.
-            // await _mediator.Publish(domainEvent);
+            _logger.LogInformation("Dispatching domain event: {Event}", domainEvent.GetType().Name);
+
+            if (domainEvent is INotification notification)
+                await _publisher.Publish(notification);
         }
     }
 }

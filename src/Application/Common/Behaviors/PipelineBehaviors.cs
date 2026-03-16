@@ -56,16 +56,26 @@ public class DomainEventBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     where TRequest : IRequest<TResponse>
 {
     private readonly TaskFlow.Application.Common.Interfaces.IDomainEventDispatcher _dispatcher;
+    private readonly TaskFlow.Application.Common.Interfaces.IEntityEventCollector _eventCollector;
 
-    public DomainEventBehavior(TaskFlow.Application.Common.Interfaces.IDomainEventDispatcher dispatcher)
-        => _dispatcher = dispatcher;
+    public DomainEventBehavior(
+        TaskFlow.Application.Common.Interfaces.IDomainEventDispatcher dispatcher,
+        TaskFlow.Application.Common.Interfaces.IEntityEventCollector eventCollector)
+    {
+        _dispatcher = dispatcher;
+        _eventCollector = eventCollector;
+    }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
         var response = await next();
-        // Domain events dispatched after successful handler execution
-        // The dispatcher picks them up from the EF ChangeTracker
-        await _dispatcher.DispatchAsync(Enumerable.Empty<Domain.Entities.IDomainEvent>());
+
+        // Collect all domain events raised by entities during this request,
+        // then clear them so they are not re-dispatched on subsequent operations.
+        var events = _eventCollector.CollectAndClear();
+        if (events.Any())
+            await _dispatcher.DispatchAsync(events);
+
         return response;
     }
 }

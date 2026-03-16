@@ -46,3 +46,8 @@ public interface IIdempotencyService
     Task MarkRequestProcessedAsync(string idempotencyKey, object result);
     Task<T?> GetCachedResultAsync<T>(string idempotencyKey);
 }
+
+public interface IEntityEventCollector
+{
+    IReadOnlyList<TaskFlow.Domain.Entities.IDomainEvent> CollectAndClear();
+}
