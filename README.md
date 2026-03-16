@@ -25,6 +25,28 @@ A production-grade **multi-tenant Task Management API** built with **.NET 8**, d
 
 ---
 
+## Architecture decisions & known trade-offs
+
+**Metrics calculated in-memory**
+The `/api/metrics` endpoint loads tasks into memory and aggregates with LINQ.
+This is intentional for simplicity — the correct production approach would be
+SQL aggregation queries directly in the database. Acceptable for a demo dataset;
+would need refactoring before production use.
+
+**Redis key invalidation uses KEYS instead of SCAN**
+`RedisCacheService` uses `server.Keys()` for pattern-based cache invalidation.
+In production with large keyspaces, SCAN would be preferred to avoid blocking
+the Redis event loop. Noted as a future improvement.
+
+**Domain events implement INotification directly**
+`TaskCompletedEvent` and siblings implement both `IDomainEvent` and MediatR's
+`INotification`. A stricter Clean Architecture approach would wrap them in a
+`DomainEventNotification<T>` adapter in Infrastructure to keep the Domain free
+of framework dependencies. The current approach is a pragmatic trade-off that
+several production codebases (including Microsoft's eShopOnContainers) also make.
+
+---
+
 ## Tech Stack
 
 | Concern | Technology |
