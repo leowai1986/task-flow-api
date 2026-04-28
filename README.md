@@ -70,7 +70,7 @@ several production codebases (including Microsoft's eShopOnContainers) also make
 ### With Docker (recommended)
 
 ```bash
-git clone https://github.com/lwainer/taskflow-api.git
+git clone https://github.com/leowai1986/task-flow-api.git
 cd taskflow-api
 docker-compose up --build
 ```
